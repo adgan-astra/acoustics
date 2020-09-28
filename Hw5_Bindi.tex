@@ -1,0 +1,179 @@
+\documentclass[11pt,a4paper]{article}
+\renewcommand{\baselinestretch}{1}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{comment}
+\usepackage{amsfonts}
+\usepackage{latexsym,amssymb}
+\usepackage{authblk}
+\usepackage{graphicx}
+\usepackage{ragged2e} % to justify text
+\usepackage{hyperref}
+\usepackage{amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{xparse,mathtools}
+\newcommand*\conj[1]{\bar{#1}}
+\newcommand*\mean[1]{\bar{#1}}
+\makeatletter
+\def\@seccntformat#1{\expandafter\ifx\csname c@#1\endcsname\c@section\else
+  \csname the#1\endcsname\quad
+  \fi}
+\makeatother
+
+\begin{document}
+
+\begin{center}
+\section{MTH 5050 - HW 5}
+$\bold{Bindi}$ $\bold{Nagda}$
+\end{center}
+
+\date{}
+\vspace{1cm}
+
+\begin{flushleft}
+\textbf{Introduction to Fast Fourier Transform}
+\justify{The Discrete Fourier Trasnform of a signal is obtained by decomposing a sequence of values in the time domain into components of different frequencies. This operation is useful in many fields, but computing it directly from the definition is too slow to be practical. The Fast Fourier Transform (FFT)  is an efficient algorithm that allows the Discrete Fourier Transform of a signal to be computed with a shorter runtime. FFT is able to achieve this because the algorithm employs the use of even-odd sorting whereby a signal sampled with n points is divided into two signals, one composed of even n points and the other composed of odd n points. Then DFT is performed on each of these, so we do $(n/2)^2$ multiplications per signal, meaning in total we do $(n^2/2)$. Then these transforms are added together to get the DFT of the complete signal. If the signals can be continually divided into two using even-odd sorting, then the time taken to complete the computations in each step is a lot smaller than $n^2$. This is also a reason why FFT is more efficient on signals with sampling points which are a power of 2. FFT enables the calculation to be completed in time $\mathcal{O}(n\log{}n)$ instead of $\mathcal{O}(n^2).$ Thus, we can achieve great savings in runtime when FFT is applied to problems that are large in size. We will use 2 examples to demonstrate the applications of Fast Fourier Transform.}
+
+\begin{flushleft}
+\textbf{Analyze the Power Spectral Density distribution for a given signal:}
+
+\justify{Marine biologists and ecologists are often interested in acoustics research. Marine biologists gather and analyze sounds made by sea animals in order to better understand how these animals navigate using echolocaton, how they communicate and interact with other species, and how they use sound to escape from predators [ref. 1]. A useful technique in analyzing the sound waves produced by dolphins is through the application of Fast Fourier Transform to determine the frequencies and harmonics that are present in these sound waves. The FFT algorithm generates what is know as the Fourier modes of the sound wave. These Fourier modes are the frequency components of the individual sinusoids, that when summed together, result in the synthesis of the original sound wave. An audio clip of the vocalization of a bottlenose dolphin was obtained from the Dolphin Research Center website [ref. 2] and the FFT algorithm was applied to the signal to find the signal's spectrum. A Power Spectral Density plot was generated to illustrate which frequencies and harmonics are emphasized within the sound produced by the bottlenose dolphin. The waveform and its power spectral density distribution are shown below:}
+
+\includegraphics{sounda.png}
+
+\includegraphics{PSDa.png}
+
+\justify{The PSD plot is useful in determining the composition of the sound wave because looking at the sound wave alone doesn't tell us much about the individual constituents that make up a dolphin sound. The PSD plot above shows that the sound generated from a bottlenose dolphin is composed largely of frequencies between 90 to 300 Hz. The fundamental frequency (or first harmonic, $\mathbf{f_1}$) was found to be 97 Hz. Then we can observe that a frequency of 196 Hz is also present with a relatively large power value. This is the second harmonic ($\mathbf{f_2}$) of the sound wave since its value is approximately two times of the fundamental frequency. It can be seen that there are a few more Fourier modes present at around 200 Hz. The third harmonic ($\mathbf{f_3}$) with a frequency of around 300 Hz is extremely weak. }
+
+\begin{flushleft}
+
+\textbf{Construction of a low-pass filter to remove high-frequency noise from a given signal:}
+
+\bigskip Functions involving sinusoids are commonly analyzed since they are prevalent in engineering applications such as digital recording, sampling, additive synthesis and pitch correction [ref. 4]. The following signal was generated and noise was added using the \textit{randn()} command in MATLAB. It is composed of both low and high frequencies. The filter we will design shall be tested on this function.
+
+$$ f(t) = \sin(10\pi t)+\sin(200 \pi t) + Noise $$
+
+\bigskip The goal here is to design a low-pass filter that only allows frequencies below a certain threshold value ($\omega_c$) to pass through. This threshold value is chosen to be 50 Hz. From the convolution theorem, we know that a convolution of two functions $(f * g)(t)$ is a function that indicates how the shape of $f(t)$ is changed by $g(t)$. Therefore, we have to determine an appropriate function $g(t)$ and do its convolution with $f(t)$ so that only low frequencies are retained. The function resulting from the convolution of both functions will be the desired low-frequency signal. In order to do this efficiently, it is much easier to use Fourier transforms since the Fourier transform of a convolution of 2 functions is simply the product of the Fourier transforms of each function:
+
+$$ \mathcal{F}(f *g)(t) = \mathcal{F}(f(t)) \mathcal{F}(g(t))$$
+$\hspace{7.5cm} = F(\omega)G(\omega)$ 
+
+\bigskip Now, suppose we say that 
+
+$$ G(\omega) = \mathcal{F}(g(t)) = \begin{cases}
+     1,             & \text{if } |\omega|\leq \omega_c\\
+     0,              & \text{if } |\omega| > \omega_c
+\end{cases}$$
+
+\bigskip Then multiplying $G(\omega)$ with $F(\omega)$ will mean that the Fourier modes of $f(t)$ with frequencies larger than $\omega_c$ will be removed since they go to 0, while Fourier modes of $f(t)$ with frequencies less than or equal to $\omega_c$ will be retained. Once the multiplication is done, we will simply use the Inverse Fourier Transform to obtain $(f *g)(t)$ which is the desired  signal composed of only low frequencies, and we can denote it by $\hat{f}(t)$.
+
+\bigskip The function $g(t)$ in the time domain can be found by application of the Inverse Fourier Transform to $G(\omega)$. Hence, 
+
+$$g(t) = sinc\Big(\frac{\omega_c}{\pi}t\Big)\frac{\omega_c}{\pi}$$
+
+\bigskip Note that here the units of $\omega_c$ are in radians/second. In the code, we will work with Hz, so a simple unit conversion will be applied to the above formula.
+
+\bigskip The filtered and original signal are shown below along with their PSD plots to demonstrate that the low-pass filter does indeed eliminate frequencies larger than 50 Hz.
+
+\bigskip \includegraphics[scale = 0.85]{signalb1.png}
+
+\includegraphics[scale = 0.85]{PSDb.png}
+
+\bigskip 
+
+\vspace{7cm}
+\section{References}
+\hspace{0.3cm}[1] Tyack, P. 2000. Functional aspects of cetacean communication. Pages 270-307 in Mann, J., R. C. Conner, P. L. Tyack, and H. Whitehead (eds.). Cetacean Societies: Field Studies of Dolphins and Whales. Chicago, Illinois: The University of Chicago Press.
+
+\medskip \hspace{0.2cm} [2] How bottlenose dolphins produce sounds, Dolphin Research Center, Grassy Key, FL, https://dolphins.org/acoustics
+
+\medskip \hspace{0.2cm} [3] Oppenheim, Alan V., Ronald W. Schafer, and John R. Buck. Discrete-Time Signal Processing. Upper Saddle River, NJ: Prentice Hall, 1999.
+
+\medskip \hspace{0.2cm} [4]  Fast Fourier Transform, Wikipedia, https://en.wikipedia.org/wiki/Fast{\_}Fourier{\_}transform
+
+\medskip \hspace{0.2cm} [5] FFT, MathWorks Help Center, https://www.mathworks.com/help/matlab/ref/fft.html
+
+\begin{comment}
+%\begin{center}This is centered.\end{center}.\\
+
+This will produce \textsc{small caps} text.\\
+
+This will produce \textbf{bold and big} text.\\
+
+This will produce \begin{huge} really huge \end{huge} text.\\
+
+This will generate \begin{tiny} quite small \end{tiny} print.\\
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=.4]{strang_0556.jpg}
+\caption{Strang Splitting at time  = 0.56 seconds}
+\end{figure}
+
+$$
+ax^2 + bx + c
+$$
+
+$ax^2 + bx + c$ is a typical 2nd degree equation. It can be solved using the quadratic formula given below:\\
+
+$$
+x = \frac{-b \pm \sqrt{b^2-4ac}}{2a}
+$$
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\renewcommand{\qed}{\hfill $\blacksquare$}
+
+\begin{definition}
+\label{Stokes}
+  This is a definition.
+\end{definition}
+
+\begin{theorem}
+\emph{(Lagrange's Theorem)}
+\label{Lagrange}
+Let $G$ be a finite group, and let $H$ be a subgroup
+of $G$.  Then the order of $H$ divides the order of $G$.
+\end{theorem}
+
+\section{Sets}
+
+\begin{lemma}
+\label{SizeOfLeftCoset}
+Let $H$ be a finite subgroup of a group $G$.  Then each left
+coset of $H$ in $G$ has the same number of elements as $H$. 
+\end{lemma}
+
+\begin{proof}
+Let $H = \{ h_1, h_2,\ldots, h_m\}$, where
+$h_1, h_2,\ldots, h_m$ are distinct, and let $x$ be an
+element of $G$.  Then the left coset $xH$ consists of
+the elements $x h_j$ for $j = 1,2,\ldots,m$.
+Suppose that $j$ and $k$ are integers between
+$1$ and $m$ for which $x h_j = x h_k$.  Then
+$h_j = x^{-1} (x h_j) = x^{-1} (x h_k) = h_k$,
+and thus $j = k$, since $h_1, h_2,\ldots, h_m$
+are distinct.  It follows that the elements
+$x h_1, x h_2,\ldots, x h_m$ are distinct.
+We conclude that the subgroup~$H$ and the left
+coset $xH$ both have $m$ elements,
+as required.
+\end{proof}
+
+By the Theorem ~\ref{Lagrange} and Definition ~\ref{Stokes} we can see that.
+
+\section{Properties of Integrals}
+
+\begin{theorem}
+\emph{(Fundamental Theorem of Calculus)}
+\label{FunThmCacl}
+The Fundamental Theorem of Calculus has two parts. The first part state, roughly, that the derivative of the integral is the original function.
+\end{theorem}
+\end{comment}
+
+\end{flushleft}
+\end{flushleft}
+
+\end{flushleft}
+\end{document}
